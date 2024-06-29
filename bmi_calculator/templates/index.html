@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator</title>
+    <style>
+       body {
+    font-family: Arial, sans-serif;
+    background: url('https://st2.depositphotos.com/1013886/10274/i/950/depositphotos_102742912-stock-photo-healthy-food-background-studio-photo.jpg') center/cover fixed; /* Add your background image */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    backdrop-filter: blur(5px);
+}
+
+.container {
+    background-color: rgba(249, 248, 249, 0.171); 
+    backdrop-filter: blur(20px); 
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+
+        h1 {
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BMI Calculator</h1>
+        <div class="input-group">
+            <label for="unit-system">Preferred unit system:</label>
+            <select id="unit-system">
+                <option value="metric">Metric</option>
+                <option value="imperial">Imperial</option>
+            </select>
+        </div>
+        <div id="metric-inputs" class="input-group">
+            <label for="weight-kg">Weight (kg):</label>
+            <input type="number" id="weight-kg">
+            <label for="height-cm">Height (cm):</label>
+            <input type="number" id="height-cm">
+        </div>
+        <div id="imperial-inputs" class="input-group" style="display: none;">
+            <label for="weight-lb">Weight (lb):</label>
+            <input type="number" id="weight-lb">
+            <label for="height-in">Height (in):</label>
+            <input type="number" id="height-in">
+        </div>
+        <div class="buttons">
+            <button id="calculate-btn">Calculate</button>
+            <button id="exit-btn">Exit</button>
+        </div>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('unit-system').addEventListener('change', function() {
+            const metricInputs = document.getElementById('metric-inputs');
+            const imperialInputs = document.getElementById('imperial-inputs');
+            if (this.value === 'metric') {
+                metricInputs.style.display = 'block';
+                imperialInputs.style.display = 'none';
+            } else {
+                metricInputs.style.display = 'none';
+                imperialInputs.style.display = 'block';
+            }
+        });
+
+        document.getElementById('calculate-btn').addEventListener('click', function() {
+            const unitSystem = document.getElementById('unit-system').value;
+            let weight = 0;
+            let height = 0;
+
+            if (unitSystem === 'metric') {
+                weight = parseFloat(document.getElementById('weight-kg').value);
+                height = parseFloat(document.getElementById('height-cm').value);
+            } else {
+                weight = parseFloat(document.getElementById('weight-lb').value);
+                height = parseFloat(document.getElementById('height-in').value);
+            }
+
+            fetch('/calculate_bmi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ unitSystem, weight, height })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `
+                    <p>Your BMI is: ${data.bmi}</p>
+                    <p>Classification: ${data.classification}</p>
+                    <p>Health risk: ${data.healthRisk}</p>
+                    <p>${data.weightAdvice}</p>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('exit-btn').addEventListener('click', function() {
+            document.getElementById('result').innerHTML = 'Exiting the BMI calculator. Stay healthy!';
+        });
+    </script>
+</body>
+</html>
